@@ -1,8 +1,12 @@
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from uuid import uuid4
 
 from .config import security_settings
 import jwt
+
+APP_DIR = Path(__file__).resolve().parent
+TEMPLATE_DIR = APP_DIR / "templates"
 
 
 def generate_access_token(data: dict, expiry: timedelta = timedelta(days=1)) -> str:

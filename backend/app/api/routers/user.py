@@ -1,14 +1,10 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 
-from ...database.models import User
-
 from ...database.redis import add_jti_to_blacklist
-from ...utils import decode_access_token
-from ...core.security import oauth2_scheme
-from ..dependencies import SessionDep, UserServiceDep, get_access_token
+from ..dependencies import UserServiceDep, get_access_token
 from ..schemas import UserInput, UserResult
 
 router = APIRouter(prefix="/user", tags=["User"])

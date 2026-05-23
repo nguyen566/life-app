@@ -10,6 +10,7 @@ class BaseUser(BaseModel):
     email: EmailStr
     dob: datetime
     userName: str
+    phone: int | None
 
 
 class UserResult(BaseUser):
