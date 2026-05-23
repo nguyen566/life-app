@@ -26,6 +26,19 @@ class DatabaseSettings(BaseSettings):
     model_config = _base_config
 
 
+class NotificationSettings(BaseSettings):
+    model_config = _base_config
+
+    MAIL_USERNAME: str
+    MAIL_PASSWORD: str
+    MAIL_FROM: str
+    MAIL_FROM_NAME: str
+    MAIL_SERVER: str
+    MAIL_PORT: int
+    MAIL_STARTTLS: bool
+    MAIL_SSL_TLS: bool
+
+
 class SecuritySettings(BaseSettings):
     JWT_SECRET: str
     JWT_ALGORITHM: str
@@ -34,4 +47,5 @@ class SecuritySettings(BaseSettings):
 
 
 db_settings = DatabaseSettings()  # type: ignore
+notification_settings = NotificationSettings()  # type: ignore
 security_settings = SecuritySettings()  # type: ignore

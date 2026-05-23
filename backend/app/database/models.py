@@ -54,6 +54,7 @@ class User(SQLModel, table=True):
     firstName: str
     lastName: str
     email: EmailStr
+    phone: int | None
     dob: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     password_hash: str
     userName: str
