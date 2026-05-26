@@ -12,6 +12,11 @@ _base_config = SettingsConfigDict(
 )
 
 
+class AppSettings(BaseSettings):
+    APP_NAME: str = "FastApi"
+    APP_DOMAIN: str = "localhost:8000"
+
+
 class DatabaseSettings(BaseSettings):
     POSTGRES_SERVER: str
     POSTGRES_PORT: int
@@ -45,7 +50,7 @@ class SecuritySettings(BaseSettings):
 
     model_config = _base_config
 
-
+app_settings = AppSettings()
 db_settings = DatabaseSettings()  # type: ignore
 notification_settings = NotificationSettings()  # type: ignore
 security_settings = SecuritySettings()  # type: ignore

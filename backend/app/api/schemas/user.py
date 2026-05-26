@@ -26,3 +26,4 @@ class UserUpdate(BaseModel):
     email: str | None = Field(default=None)
     dob: datetime | None = Field(default=None)
     password_hash: str | None = Field(default=None)
+    email_verified: bool | None = Field(default=None)

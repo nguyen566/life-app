@@ -58,6 +58,7 @@ class User(SQLModel, table=True):
     dob: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     password_hash: str
     userName: str
+    email_verified: bool = Field(default=False)
 
     job_applications: list[JobApplication] = Relationship(
         back_populates="user",
