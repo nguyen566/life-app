@@ -1,8 +1,13 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Form, Request
 from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.templating import Jinja2Templates
+from pydantic import EmailStr
 
+from app.utils import TEMPLATE_DIR
+
+from ...config import app_settings
 from ...database.redis import add_jti_to_blacklist
 from ..dependencies import UserServiceDep, get_access_token
 from ..schemas import UserInput, UserResult
@@ -32,6 +37,35 @@ async def login_user(
 async def verify_user_email(token: str, service: UserServiceDep):
     await service.verify_user_email(token)
     return {"detail": "User is verifed"}
+
+
+@router.get("/forgot_password")
+async def forgot_password(email: EmailStr, service: UserServiceDep):
+    await service.send_password_reset_link(email)
+    return {"detail": "Check email for password reset link"}
+
+
+@router.get("/reset_password_form")
+async def reset_password_form(request: Request, token: str):
+    templates = Jinja2Templates(TEMPLATE_DIR)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="reset_password_form.html",
+        context={
+            "reset_url": f"http://{app_settings.APP_DOMAIN}/user/reset_password?token={token}"
+        },
+    )
+
+
+@router.post("/reset_password")
+async def reset_password(
+    token: str,
+    password: Annotated[str, Form()],
+    service: UserServiceDep,
+):
+    await service.reset_user_password(token, password)
+    return {"detail": "Password reset successful"}
 
 
 @router.get("/logout")

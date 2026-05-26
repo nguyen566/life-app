@@ -7,10 +7,9 @@ from fastapi_mail import (
     NameEmail,
 )
 from pydantic import EmailStr
-from app.config import app_settings, notification_settings
-from app.utils import TEMPLATE_DIR
-from ..database.models import User
 
+from app.config import notification_settings
+from app.utils import TEMPLATE_DIR
 
 class NotificationService:
     def __init__(self, tasks: BackgroundTasks):
@@ -22,11 +21,12 @@ class NotificationService:
         )
         self.tasks = tasks
 
-    def verify_email(
+    async def send_email_with_template(
         self,
         recipients: list[EmailStr],
-        user: User,
-        verify_token: str,
+        subject: str,
+        context: dict,
+        template_name: str,
     ) -> dict:
         self.tasks.add_task(
             self.fastmail.send_message,
@@ -35,14 +35,11 @@ class NotificationService:
                     NameEmail(name=email.split("@")[0], email=email)
                     for email in recipients
                 ],
-                subject="Verify your email",
+                subject=subject,
                 subtype=MessageType.html,
-                template_body={
-                    "username": user.userName,
-                    "verify_url": f"http://{app_settings.APP_DOMAIN}/user/verify?token={verify_token}",
-                },
+                template_body=context,
             ),
-            template_name="mail_verify_email.html",
+            template_name=template_name,
         )
 
         return {"detail": "Mail sent"}
