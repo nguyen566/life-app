@@ -1,11 +1,14 @@
+from datetime import timedelta
 from uuid import UUID
 
 from fastapi import BackgroundTasks, HTTPException, status
 from pwdlib import PasswordHash
+from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
+from ..config import app_settings
 from ..api.schemas import UserInput
 from ..database.models import User
 from ..services.notification import NotificationService
@@ -23,8 +26,30 @@ class UserService:
         self.session = session
         self.notification_service = NotificationService(tasks)
 
-    async def _get(self, id: int) -> User | None:
-        return await self.session.get(User, id)
+    async def _get(self, id: UUID) -> User:
+        user = await self.session.get(User, id)
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Email does not exist",
+            )
+
+        return user
+
+    async def _get_by_email(self, email: EmailStr) -> User:
+        selectStmt = await self.session.execute(
+            select(User).where(col(User.email) == email)
+        )
+        user = selectStmt.scalar()
+
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Email does not exist",
+            )
+
+        return user
 
     async def _create_user(self, user: User) -> User:
         self.session.add(user)
@@ -54,6 +79,20 @@ class UserService:
 
         return new_user
 
+    async def reset_user_password(self, token: str, new_password: str):
+        token_data = decode_url_safe_token(
+            token, salt="password-reset", expiry=timedelta(days=1)
+        )
+
+        if not token_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+            )
+
+        user = await self._get(UUID(token_data["id"]))
+        user.password_hash = pwd_context.hash(new_password)
+        await self._update(user)
+
     async def verify_user_email(self, token: str):
         token_data = decode_url_safe_token(token)
 
@@ -64,7 +103,6 @@ class UserService:
 
         user = await self._get(UUID(token_data["id"]))
         user.email_verified = True
-
         await self._update(user)
 
     async def _send_verify_notification(self, user_data: User):
@@ -75,13 +113,16 @@ class UserService:
         result = selectStmt.scalar()
 
         if result:
-            token = generate_url_safe_token(
+            token = generate_url_safe_token({"id": str(result.id)})
+            await self.notification_service.send_email_with_template(
+                [result.email],
+                "Verify your email",
                 {
-                    "email": result.email,
-                    "id": str(result.id),
-                }
+                    "username": result.userName,
+                    "verify_url": f"http://{app_settings.APP_DOMAIN}/user/verify?token={token}",
+                },
+                "mail_verify_email.html",
             )
-            self.notification_service.verify_email([result.email], result, token)
 
     async def get_login_token(self, email, password) -> str:
         # Validate credentials
@@ -116,3 +157,17 @@ class UserService:
         )
 
         return token
+
+    async def send_password_reset_link(self, email: EmailStr):
+        user = await self._get_by_email(email)
+
+        token = generate_url_safe_token({"id": str(user.id)}, salt="password-reset")
+        await self.notification_service.send_email_with_template(
+            [user.email],
+            "FastShip Account Password Reset",
+            {
+                "username": user.userName,
+                "reset_url": f"http://{app_settings.APP_DOMAIN}/user/reset_password_form?token={token}",
+            },
+            "mail_password_reset.html",
+        )
