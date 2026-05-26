@@ -1,28 +1,46 @@
-from fastapi import HTTPException, status
+from uuid import UUID
+
+from fastapi import BackgroundTasks, HTTPException, status
 from pwdlib import PasswordHash
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-
-from ..utils import generate_access_token
+from sqlmodel import col
 
 from ..api.schemas import UserInput
 from ..database.models import User
+from ..services.notification import NotificationService
+from ..utils import (
+    decode_url_safe_token,
+    generate_access_token,
+    generate_url_safe_token,
+)
 
 pwd_context = PasswordHash.recommended()
 
 
 class UserService:
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession, tasks: BackgroundTasks):
         self.session = session
+        self.notification_service = NotificationService(tasks)
 
-    async def get(self, id: int) -> User | None:
+    async def _get(self, id: int) -> User | None:
         return await self.session.get(User, id)
 
-    async def register(self, user_input: UserInput) -> User:
+    async def _create_user(self, user: User) -> User:
+        self.session.add(user)
+        await self.session.commit()
+        await self.session.refresh(user)
+
+        return user
+
+    async def _update(self, user_update: User) -> User:
+        return await self._create_user(user_update)
+
+    async def register_user(self, user_input: UserInput) -> User:
         new_user = User(
             **user_input.model_dump(exclude={"password"}),
             password_hash=pwd_context.hash(user_input.password),
-            job_applications=[]
+            job_applications=[],
         )
 
         if not new_user:
@@ -31,11 +49,39 @@ class UserService:
                 detail="Not a valid user credentials",
             )
 
-        self.session.add(new_user)
-        await self.session.commit()
-        await self.session.refresh(new_user)
+        await self._create_user(new_user)
+        await self._send_verify_notification(new_user)
 
         return new_user
+
+    async def verify_user_email(self, token: str):
+        token_data = decode_url_safe_token(token)
+
+        if not token_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
+            )
+
+        user = await self._get(UUID(token_data["id"]))
+        user.email_verified = True
+
+        await self._update(user)
+
+    async def _send_verify_notification(self, user_data: User):
+        selectStmt = await self.session.execute(
+            select(User).where(col(User.email) == user_data.email)
+        )
+
+        result = selectStmt.scalar()
+
+        if result:
+            token = generate_url_safe_token(
+                {
+                    "email": result.email,
+                    "id": str(result.id),
+                }
+            )
+            self.notification_service.verify_email([result.email], result, token)
 
     async def get_login_token(self, email, password) -> str:
         # Validate credentials
@@ -50,8 +96,14 @@ class UserService:
 
         if not pwd_context.verify(password, user_data.password_hash):
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Password is incorrect",
+            )
+
+        if not user_data.email_verified:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Email not verified",
             )
 
         token = generate_access_token(

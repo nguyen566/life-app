@@ -1,7 +1,7 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..database.redis import is_jti_blacklisted
@@ -54,8 +54,8 @@ def get_job_application_service(session: SessionDep):
     return JobApplicationService(session)
 
 
-def get_user_service(session: SessionDep):
-    return UserService(session)
+def get_user_service(session: SessionDep, tasks: BackgroundTasks):
+    return UserService(session, tasks)
 
 
 CurrentUserDep = Annotated[User, Depends(get_logged_in_user)]

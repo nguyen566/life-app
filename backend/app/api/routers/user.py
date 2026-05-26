@@ -12,7 +12,7 @@ router = APIRouter(prefix="/user", tags=["User"])
 
 @router.post("/register")
 async def register_user(user: UserInput, service: UserServiceDep) -> UserResult:
-    new_user = await service.register(user)
+    new_user = await service.register_user(user)
     return UserResult(**new_user.model_dump())
 
 
@@ -26,6 +26,12 @@ async def login_user(
     )
 
     return {"access_token": user_token, "type": "jwt"}
+
+
+@router.get("/verify")
+async def verify_user_email(token: str, service: UserServiceDep):
+    await service.verify_user_email(token)
+    return {"detail": "User is verifed"}
 
 
 @router.get("/logout")
