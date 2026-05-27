@@ -1,12 +1,13 @@
 from datetime import timedelta
 from uuid import UUID
 
-from fastapi import BackgroundTasks, HTTPException, status
 from pwdlib import PasswordHash
 from pydantic import EmailStr
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
+
+from app.core.exceptions import EntityNotFound, IncorrectPassword, InsufficientData, InvalidToken, UnverifiedEmail
 
 from ..api.schemas import UserInput
 from ..config import app_settings
@@ -29,10 +30,7 @@ class UserService:
         user = await self.session.get(User, id)
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Email does not exist",
-            )
+            raise EntityNotFound()
 
         return user
 
@@ -43,10 +41,7 @@ class UserService:
         user = selectStmt.scalar()
 
         if not user:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Email does not exist",
-            )
+            raise EntityNotFound()
 
         return user
 
@@ -68,10 +63,7 @@ class UserService:
         )
 
         if not new_user:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Not a valid user credentials",
-            )
+            raise InsufficientData()
 
         await self._create_user(new_user)
         await self._send_verify_notification(new_user)
@@ -84,9 +76,7 @@ class UserService:
         )
 
         if not token_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
-            )
+            raise InvalidToken()
 
         user = await self._get(UUID(token_data["id"]))
         user.password_hash = pwd_context.hash(new_password)
@@ -96,9 +86,7 @@ class UserService:
         token_data = decode_url_safe_token(token)
 
         if not token_data:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid token"
-            )
+            raise InvalidToken()
 
         user = await self._get(UUID(token_data["id"]))
         user.email_verified = True
@@ -129,22 +117,13 @@ class UserService:
         user_data = result.scalar()
 
         if not user_data:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Email not found",
-            )
+            raise EntityNotFound()
 
         if not pwd_context.verify(password, user_data.password_hash):
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Password is incorrect",
-            )
+            raise IncorrectPassword()
 
         if not user_data.email_verified:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Email not verified",
-            )
+            raise UnverifiedEmail()
 
         token = generate_access_token(
             data={

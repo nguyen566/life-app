@@ -1,8 +1,10 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.exceptions import EntityNotFound, InvalidToken, NotAuthenticatedUser
 
 from ..core.security import oauth2_scheme
 from ..database.models import User
@@ -20,17 +22,12 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 # Access token data dep
 async def get_access_token(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
     if not token:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="User not authenticated"
-        )
+        raise NotAuthenticatedUser()
 
     decoded_token = decode_access_token(token)
 
     if not decoded_token or await is_jti_blacklisted(decoded_token["jti"]):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid or expired access token",
-        )
+        raise InvalidToken()
 
     return decoded_token
 
@@ -43,9 +40,7 @@ async def get_logged_in_user(
     user = await session.get(User, UUID(decoded_token["user"]["id"]))
 
     if not user:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Unable to find user"
-        )
+        raise EntityNotFound()
 
     return UserResult(**user.model_dump())
 
