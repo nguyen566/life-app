@@ -1,6 +1,8 @@
 from contextlib import asynccontextmanager
+from time import perf_counter
 
-from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi import FastAPI, Request, Response
 from scalar_fastapi import get_scalar_api_reference
 
 from app.core.exceptions import add_exception_handlers
@@ -20,6 +22,12 @@ app = FastAPI(lifespan=lifespan_handler)
 app.include_router(master_router)
 
 add_exception_handlers(app)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5500"],
+    allow_methods=["*"],
+)
 
 
 @app.get("/scalar", include_in_schema=False)
