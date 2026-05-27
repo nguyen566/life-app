@@ -20,7 +20,7 @@
     `alembic upgrade head`
 
 ### Windows Ubuntu WSL 
-**Ensure you are in the project directory ***cd /mnt/<drive>/<project-directory>**
+**Ensure you are in the project directory cd /mnt/<drive>/<project-directory>**
 - **Starts up redis server**
     `redis-server`
 - **Stops redis-server if running in background. May need to append sudo for admin rights**
