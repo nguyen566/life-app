@@ -8,23 +8,22 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
-from ..config import app_settings
 from ..api.schemas import UserInput
+from ..config import app_settings
 from ..database.models import User
-from ..services.notification import NotificationService
 from ..utils import (
     decode_url_safe_token,
     generate_access_token,
     generate_url_safe_token,
 )
+from ..worker.tasks import send_email_with_template
 
 pwd_context = PasswordHash.recommended()
 
 
 class UserService:
-    def __init__(self, session: AsyncSession, tasks: BackgroundTasks):
+    def __init__(self, session: AsyncSession):
         self.session = session
-        self.notification_service = NotificationService(tasks)
 
     async def _get(self, id: UUID) -> User:
         user = await self.session.get(User, id)
@@ -114,7 +113,7 @@ class UserService:
 
         if result:
             token = generate_url_safe_token({"id": str(result.id)})
-            await self.notification_service.send_email_with_template(
+            send_email_with_template.delay(
                 [result.email],
                 "Verify your email",
                 {
@@ -162,7 +161,7 @@ class UserService:
         user = await self._get_by_email(email)
 
         token = generate_url_safe_token({"id": str(user.id)}, salt="password-reset")
-        await self.notification_service.send_email_with_template(
+        send_email_with_template.delay(
             [user.email],
             "FastShip Account Password Reset",
             {
