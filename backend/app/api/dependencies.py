@@ -23,12 +23,9 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 async def get_access_token(token: Annotated[str, Depends(oauth2_scheme)]) -> dict:
     if not token:
         raise NotAuthenticatedUser()
-
     decoded_token = decode_access_token(token)
-
     if not decoded_token or await is_jti_blacklisted(decoded_token["jti"]):
         raise InvalidToken()
-
     return decoded_token
 
 

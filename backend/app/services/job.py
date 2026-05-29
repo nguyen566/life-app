@@ -20,7 +20,6 @@ class JobApplicationService:
 
     async def get(self, id: UUID) -> JobApplication:
         job_application = await self.session.get(JobApplication, id)
-
         if not job_application:
             raise EntityNotFound()
 

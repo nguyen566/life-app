@@ -142,7 +142,7 @@ class UserService:
         token = generate_url_safe_token({"id": str(user.id)}, salt="password-reset")
         send_email_with_template.delay(
             [user.email],
-            "FastShip Account Password Reset",
+            "Job Tracker Account Password Reset",
             {
                 "username": user.userName,
                 "reset_url": f"http://{app_settings.APP_DOMAIN}/user/reset_password_form?token={token}",

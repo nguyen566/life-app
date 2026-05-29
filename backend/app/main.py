@@ -1,8 +1,7 @@
 from contextlib import asynccontextmanager
-from time import perf_counter
 
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI
 from scalar_fastapi import get_scalar_api_reference
 
 from app.core.exceptions import add_exception_handlers
@@ -28,6 +27,11 @@ app.add_middleware(
     allow_origins=["http://localhost:5500"],
     allow_methods=["*"],
 )
+
+
+@app.get("/")
+def read_root():
+    return {"detail": "servier is running..."}
 
 
 @app.get("/scalar", include_in_schema=False)
