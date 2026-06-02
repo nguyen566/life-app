@@ -2,6 +2,7 @@ from contextlib import asynccontextmanager
 
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI
+from fastapi.routing import APIRoute
 from scalar_fastapi import get_scalar_api_reference
 
 from app.core.exceptions import add_exception_handlers
@@ -16,6 +17,10 @@ async def lifespan_handler(app: FastAPI):
     yield
 
 
+def custom_generate_unique_id_function(route: APIRoute) -> str:
+    return route.name
+
+
 app = FastAPI(lifespan=lifespan_handler)
 
 app.include_router(master_router)
@@ -24,8 +29,10 @@ add_exception_handlers(app)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5500"],
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 
