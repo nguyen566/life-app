@@ -18,7 +18,9 @@
     `alembic revision --autogenerate -m <message>`
 - **Runs the upgrade command of the latest migration file for db changes**
     `alembic upgrade head`
-
+- **Auto generates API Endpoints using openAPI**
+    <!-- Ensure backend is running -->
+    `sta generate -p http://127.0.0.1:8000/openapi.json -n client.ts --axios`
 ### Windows Ubuntu WSL <!-- Ensure you are in the project directory cd /mnt/<drive>/<project-directory> -->
 - **Starts up redis server**
     `redis-server`
