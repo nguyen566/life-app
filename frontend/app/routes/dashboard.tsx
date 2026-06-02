@@ -5,6 +5,7 @@ import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
 import { JobStatus } from "~/lib/client";
 import { ExtraJobStatus, getJobApplicationCardInfo } from "~/lib/utils";
+import { APP_ROUTES } from "~/routes";
 
 export default function DashboardPage() {
   const { isLoading, data } = useQuery({
@@ -17,7 +18,7 @@ export default function DashboardPage() {
 
   return (
     <SidebarLayout
-      currentRoute="/dashboard"
+      currentRoute={APP_ROUTES.DASHBOARD}
       header="Dashboard"
       children={
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">

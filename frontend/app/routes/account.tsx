@@ -7,6 +7,7 @@ import { SpinnerCustom } from "~/components/ui/spinner";
 import { AuthContext } from "~/contexts/AuthContext";
 import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
+import { APP_ROUTES } from "~/routes";
 
 export default function AccountPage() {
   const { logout } = useContext(AuthContext);
@@ -21,7 +22,7 @@ export default function AccountPage() {
 
   return (
     <SidebarLayout
-      currentRoute="/me"
+      currentRoute={APP_ROUTES.ACCOUNT}
       header="Account Details"
       children={
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
