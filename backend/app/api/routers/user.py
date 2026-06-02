@@ -6,6 +6,7 @@ from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
 
 from app.utils import TEMPLATE_DIR
+from app.core.security import TokenData
 
 from ...config import app_settings
 from ...database.redis import add_jti_to_blacklist
@@ -25,12 +26,12 @@ async def register_user(user: UserInput, service: UserServiceDep) -> UserResult:
 async def login_user(
     request_form: Annotated[OAuth2PasswordRequestForm, Depends()],
     service: UserServiceDep,
-):
+) -> TokenData:
     user_token = await service.get_login_token(
         request_form.username, request_form.password
     )
 
-    return {"access_token": user_token, "type": "jwt"}
+    return TokenData(access_token=user_token, token_type="jwt")
 
 
 @router.get("/verify")
