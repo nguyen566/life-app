@@ -26,7 +26,7 @@ export function AppSidebar({
     },
     {
       title: "Account",
-      url: "/account",
+      url: "/me",
     },
   ];
 
