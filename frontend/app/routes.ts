@@ -6,5 +6,6 @@ export default [
   route("/forgot-password", "routes/forgot-password.tsx"),
   route("/", "layouts/protected-layout.tsx", [
     route("/dashboard", "routes/dashboard.tsx"),
+    route("/me", "routes/account.tsx"),
   ]),
 ] satisfies RouteConfig;

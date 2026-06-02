@@ -62,6 +62,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
     // Clear the cached token
     localStorage.removeItem(AuthCacheType.TOKEN);
+    navigate("/login");
   };
 
   return (

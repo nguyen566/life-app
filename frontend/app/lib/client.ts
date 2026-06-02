@@ -49,6 +49,15 @@ export interface BodyResetPasswordUserResetPasswordPost {
   password: string;
 }
 
+/** CommonHTTPResponse */
+export interface CommonHTTPResponse {
+  /**
+   * Detail
+   * Success message details
+   */
+  detail: string;
+}
+
 /** HTTPValidationError */
 export interface HTTPValidationError {
   /** Detail */
@@ -143,14 +152,14 @@ export interface JobApplicationResult {
    * Date Applied
    * Date when the application was submitted
    * @format date-time
-   * @default "2026-06-01T10:20:48.188437"
+   * @default "2026-06-02T10:03:23.610175"
    */
   date_applied?: string;
   /**
    * Date Modified
    * Date when the application was last updated
    * @format date-time
-   * @default "2026-06-01T10:20:48.188458"
+   * @default "2026-06-02T10:03:23.610196"
    */
   date_modified?: string;
   /**
@@ -550,63 +559,16 @@ export class Api<
      * No description
      *
      * @tags User
-     * @name RegisterUserUserRegisterPost
-     * @summary Register User
-     * @request POST:/user/register
+     * @name GetCurrentProfileUserMeGet
+     * @summary Get Current Profile
+     * @request GET:/user/me
+     * @secure
      */
-    registerUserUserRegisterPost: (
-      data: UserInput,
-      params: RequestParams = {},
-    ) =>
-      this.request<UserResult, HTTPValidationError>({
-        path: `/user/register`,
-        method: "POST",
-        body: data,
-        type: ContentType.Json,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
-     * @name LoginUserUserLoginPost
-     * @summary Login User
-     * @request POST:/user/login
-     */
-    loginUserUserLoginPost: (
-      data: BodyLoginUserUserLoginPost,
-      params: RequestParams = {},
-    ) =>
-      this.request<TokenData, HTTPValidationError>({
-        path: `/user/login`,
-        method: "POST",
-        body: data,
-        type: ContentType.UrlEncoded,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
-     * @name VerifyUserEmailUserVerifyGet
-     * @summary Verify User Email
-     * @request GET:/user/verify
-     */
-    verifyUserEmailUserVerifyGet: (
-      query: {
-        /** Token */
-        token: string;
-      },
-      params: RequestParams = {},
-    ) =>
-      this.request<any, HTTPValidationError>({
-        path: `/user/verify`,
+    getCurrentProfileUserMeGet: (params: RequestParams = {}) =>
+      this.request<UserResult, any>({
+        path: `/user/me`,
         method: "GET",
-        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -629,10 +591,28 @@ export class Api<
       },
       params: RequestParams = {},
     ) =>
-      this.request<any, HTTPValidationError>({
+      this.request<CommonHTTPResponse, HTTPValidationError>({
         path: `/user/forgot_password`,
         method: "GET",
         query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name LogoutUserUserLogoutGet
+     * @summary Logout User
+     * @request GET:/user/logout
+     * @secure
+     */
+    logoutUserUserLogoutGet: (params: RequestParams = {}) =>
+      this.request<CommonHTTPResponse, any>({
+        path: `/user/logout`,
+        method: "GET",
+        secure: true,
         format: "json",
         ...params,
       }),
@@ -664,6 +644,71 @@ export class Api<
      * No description
      *
      * @tags User
+     * @name VerifyUserEmailUserVerifyGet
+     * @summary Verify User Email
+     * @request GET:/user/verify
+     */
+    verifyUserEmailUserVerifyGet: (
+      query: {
+        /** Token */
+        token: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<CommonHTTPResponse, HTTPValidationError>({
+        path: `/user/verify`,
+        method: "GET",
+        query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name LoginUserUserLoginPost
+     * @summary Login User
+     * @request POST:/user/login
+     */
+    loginUserUserLoginPost: (
+      data: BodyLoginUserUserLoginPost,
+      params: RequestParams = {},
+    ) =>
+      this.request<TokenData, HTTPValidationError>({
+        path: `/user/login`,
+        method: "POST",
+        body: data,
+        type: ContentType.UrlEncoded,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name RegisterUserUserRegisterPost
+     * @summary Register User
+     * @request POST:/user/register
+     */
+    registerUserUserRegisterPost: (
+      data: UserInput,
+      params: RequestParams = {},
+    ) =>
+      this.request<UserResult, HTTPValidationError>({
+        path: `/user/register`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
      * @name ResetPasswordUserResetPasswordPost
      * @summary Reset Password
      * @request POST:/user/reset_password
@@ -676,30 +721,12 @@ export class Api<
       data: BodyResetPasswordUserResetPasswordPost,
       params: RequestParams = {},
     ) =>
-      this.request<any, HTTPValidationError>({
+      this.request<CommonHTTPResponse, HTTPValidationError>({
         path: `/user/reset_password`,
         method: "POST",
         query: query,
         body: data,
         type: ContentType.UrlEncoded,
-        format: "json",
-        ...params,
-      }),
-
-    /**
-     * No description
-     *
-     * @tags User
-     * @name LogoutUserUserLogoutGet
-     * @summary Logout User
-     * @request GET:/user/logout
-     * @secure
-     */
-    logoutUserUserLogoutGet: (params: RequestParams = {}) =>
-      this.request<any, any>({
-        path: `/user/logout`,
-        method: "GET",
-        secure: true,
         format: "json",
         ...params,
       }),

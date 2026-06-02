@@ -1,21 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { AppSidebar } from "~/components/app-sidebar";
 import { JobApplicationCard } from "~/components/job-application-card";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "~/components/ui/breadcrumb";
-import { Separator } from "~/components/ui/separator";
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from "~/components/ui/sidebar";
 import { SpinnerCustom } from "~/components/ui/spinner";
+import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
 import { JobStatus } from "~/lib/client";
 import { ExtraJobStatus, getJobApplicationCardInfo } from "~/lib/utils";
@@ -30,23 +16,10 @@ export default function DashboardPage() {
   });
 
   return (
-    <SidebarProvider
-      style={
-        {
-          "--sidebar-width": "19rem",
-        } as React.CSSProperties
-      }
-    >
-      <AppSidebar currentRoute="/dashboard" />
-      <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 px-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-vertical:h-4 data-vertical:self-auto"
-          />
-          <h2>Dashboard</h2>
-        </header>
+    <SidebarLayout
+      currentRoute="/dashboard"
+      header="Dashboard"
+      children={
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
           {isLoading ? (
             <SpinnerCustom />
@@ -84,7 +57,7 @@ export default function DashboardPage() {
             </>
           )}
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+      }
+    />
   );
 }
