@@ -10,12 +10,16 @@ import {
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
 import { useContext } from "react";
 import { AuthContext } from "~/contexts/AuthContext";
+import z from "zod";
+import { Controller, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 export function LoginForm({
   className,
@@ -23,17 +27,31 @@ export function LoginForm({
 }: React.ComponentProps<"div">) {
   const { login } = useContext(AuthContext);
 
-  const submitLogin = (event: FormData) => {
-    const email = event.get("email");
-    const password = event.get("password");
+  const formSchema = z.object({
+    email: z.email().min(1, "Please enter a valid email"),
+    password: z.string().min(1, "Please enter a password"),
+  });
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    mode: "all",
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const submitLogin = async (data: z.infer<typeof formSchema>) => {
+    const { email, password } = data;
+
+    await form.trigger();
 
     if (!email || !password) {
       return;
     }
 
-    login(email.toString(), password.toString());
+    await login(email, password);
   };
-
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -44,21 +62,53 @@ export function LoginForm({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form action={submitLogin}>
+          <form id="login-form" onSubmit={form.handleSubmit(submitLogin)}>
             <FieldGroup>
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="m@example.com"
-                  required
-                />
-              </Field>
+              <Controller
+                name="email"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="email">Email</FieldLabel>
+                    <Input
+                      {...field}
+                      id="email"
+                      name="email"
+                      type="email"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Please enter a valid email"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
+              <Controller
+                name="password"
+                control={form.control}
+                render={({ field, fieldState }) => (
+                  <Field data-invalid={fieldState.invalid}>
+                    <FieldLabel htmlFor="password">Password</FieldLabel>
+
+                    <Input
+                      {...field}
+                      id="password"
+                      name="password"
+                      type="password"
+                      required
+                      aria-invalid={fieldState.invalid}
+                      placeholder="Password"
+                    />
+                    {fieldState.invalid && (
+                      <FieldError errors={[fieldState.error]} />
+                    )}
+                  </Field>
+                )}
+              />
               <Field>
                 <div className="flex items-center">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
                   <a
                     href="/forgot-password"
                     className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
@@ -66,10 +116,9 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Input id="password" name="password" type="password" required />
-              </Field>
-              <Field>
-                <Button type="submit">Login</Button>
+                <Button type="submit" form="login-form">
+                  Login
+                </Button>
                 <FieldDescription className="text-center">
                   Don&apos;t have an account? <a href="#">Sign up</a>
                 </FieldDescription>
