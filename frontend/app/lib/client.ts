@@ -95,10 +95,10 @@ export interface JobApplication {
    */
   is_deleted?: boolean;
   /**
-   * User Id
-   * @format uuid
+   * User Email
+   * @format email
    */
-  user_id: string;
+  user_email: string;
 }
 
 /** JobApplicationCreate */
@@ -152,14 +152,14 @@ export interface JobApplicationResult {
    * Date Applied
    * Date when the application was submitted
    * @format date-time
-   * @default "2026-06-02T10:03:23.610175"
+   * @default "2026-06-05T13:29:44.227942"
    */
   date_applied?: string;
   /**
    * Date Modified
    * Date when the application was last updated
    * @format date-time
-   * @default "2026-06-02T10:03:23.610196"
+   * @default "2026-06-05T13:29:44.227963"
    */
   date_modified?: string;
   /**
@@ -199,10 +199,6 @@ export interface UserInput {
    * @format date-time
    */
   dob: string;
-  /** Username */
-  userName: string;
-  /** Phone */
-  phone: number | null;
   /** Password */
   password: string;
 }
@@ -223,16 +219,6 @@ export interface UserResult {
    * @format date-time
    */
   dob: string;
-  /** Username */
-  userName: string;
-  /** Phone */
-  phone: number | null;
-  /**
-   * Id
-   * Unique identifier for a user
-   * @format uuid
-   */
-  id: string;
 }
 
 /** ValidationError */

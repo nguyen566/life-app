@@ -20,7 +20,7 @@ router = APIRouter(prefix="/user", tags=["User"])
 # GETTERS
 @router.get("/me")
 async def get_current_profile(user: CurrentUserDep) -> UserResult:
-    return user
+    return UserResult(**user.model_dump())
 
 
 @router.get("/forgot_password")

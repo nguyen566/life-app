@@ -15,6 +15,7 @@ _base_config = SettingsConfigDict(
 class AppSettings(BaseSettings):
     APP_NAME: str = "FastApi"
     APP_DOMAIN: str = "localhost:8000"
+    WEB_APP_DOMAIN: str = "localhost:5173"
 
 
 class DatabaseSettings(BaseSettings):

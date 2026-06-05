@@ -52,6 +52,7 @@ export function LoginForm({
 
     await login(email, password);
   };
+  
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -120,7 +121,7 @@ export function LoginForm({
                   Login
                 </Button>
                 <FieldDescription className="text-center">
-                  Don&apos;t have an account? <a href="#">Sign up</a>
+                  Don&apos;t have an account? <a href="/sign-up">Sign up</a>
                 </FieldDescription>
               </Field>
             </FieldGroup>

@@ -7,6 +7,11 @@ class BaseCustomError(Exception):
     status = status.HTTP_409_CONFLICT
 
 
+class DuplicateUser(BaseCustomError):
+    detail: str = "This email is already in use"
+    status = status.HTTP_409_CONFLICT
+
+
 class EntityNotFound(BaseCustomError):
     detail: str = "Entity(s) not found in database"
     status = status.HTTP_404_NOT_FOUND

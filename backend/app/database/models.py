@@ -32,7 +32,7 @@ class JobApplication(SQLModel, table=True):
     date_modified: datetime = Field(default_factory=datetime.now)
     is_deleted: bool = Field(default=False)
 
-    user_id: UUID = Field(foreign_key="app_users.id")
+    user_email: EmailStr = Field(foreign_key="app_users.email")
     user: "User" = Relationship(
         back_populates="job_applications",
         sa_relationship_kwargs={
@@ -44,20 +44,11 @@ class JobApplication(SQLModel, table=True):
 class User(SQLModel, table=True):
     __tablename__ = "app_users"
 
-    id: UUID = Field(
-        sa_column=Column(
-            postgresql.UUID,
-            default=uuid4,
-            primary_key=True,
-        ),
-    )
+    email: EmailStr = Field(primary_key=True)
     firstName: str
     lastName: str
-    email: EmailStr
-    phone: int | None
     dob: datetime = Field(sa_column=Column(DateTime(timezone=True), nullable=False))
     password_hash: str
-    userName: str
     email_verified: bool = Field(default=False)
 
     job_applications: list[JobApplication] = Relationship(

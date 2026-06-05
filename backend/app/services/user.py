@@ -1,13 +1,20 @@
 from datetime import timedelta
-from uuid import UUID
 
 from pwdlib import PasswordHash
 from pydantic import EmailStr
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlmodel import col
 
-from app.core.exceptions import EntityNotFound, IncorrectPassword, InsufficientData, InvalidToken, UnverifiedEmail
+from app.core.exceptions import (
+    DuplicateUser,
+    EntityNotFound,
+    IncorrectPassword,
+    InsufficientData,
+    InvalidToken,
+    UnverifiedEmail,
+)
 
 from ..api.schemas import UserInput
 from ..config import app_settings
@@ -26,19 +33,8 @@ class UserService:
     def __init__(self, session: AsyncSession):
         self.session = session
 
-    async def _get(self, id: UUID) -> User:
-        user = await self.session.get(User, id)
-
-        if not user:
-            raise EntityNotFound()
-
-        return user
-
-    async def _get_by_email(self, email: EmailStr) -> User:
-        selectStmt = await self.session.execute(
-            select(User).where(col(User.email) == email)
-        )
-        user = selectStmt.scalar()
+    async def _get(self, email: EmailStr) -> User:
+        user = await self.session.get(User, email)
 
         if not user:
             raise EntityNotFound()
@@ -47,7 +43,12 @@ class UserService:
 
     async def _create_user(self, user: User) -> User:
         self.session.add(user)
-        await self.session.commit()
+        try:
+            await self.session.commit()
+        except IntegrityError:
+            await self.session.rollback()
+            raise DuplicateUser()
+            
         await self.session.refresh(user)
 
         return user
@@ -78,7 +79,7 @@ class UserService:
         if not token_data:
             raise InvalidToken()
 
-        user = await self._get(UUID(token_data["id"]))
+        user = await self._get(token_data["email"])
         user.password_hash = pwd_context.hash(new_password)
         await self._update(user)
 
@@ -88,7 +89,7 @@ class UserService:
         if not token_data:
             raise InvalidToken()
 
-        user = await self._get(UUID(token_data["id"]))
+        user = await self._get(token_data["email"])
         user.email_verified = True
         await self._update(user)
 
@@ -100,13 +101,14 @@ class UserService:
         result = selectStmt.scalar()
 
         if result:
-            token = generate_url_safe_token({"id": str(result.id)})
+            token = generate_url_safe_token({"email": str(result.email)})
             send_email_with_template.delay(
                 [result.email],
                 "Verify your email",
                 {
-                    "username": result.userName,
-                    "verify_url": f"http://{app_settings.APP_DOMAIN}/user/verify?token={token}",
+                    "email": result.email,
+                    # "verify_url": f"http://{app_settings.WEB_APP_DOMAIN}/user/verify?token={token}",
+                    "verify_url": f"http://{app_settings.WEB_APP_DOMAIN}/verify?token={token}",
                 },
                 "mail_verify_email.html",
             )
@@ -128,8 +130,7 @@ class UserService:
         token = generate_access_token(
             data={
                 "user": {
-                    "userName": user_data.userName,
-                    "id": str(user_data.id),
+                    "email": user_data.email,
                 }
             }
         )
@@ -137,14 +138,12 @@ class UserService:
         return token
 
     async def send_password_reset_link(self, email: EmailStr):
-        user = await self._get_by_email(email)
-
-        token = generate_url_safe_token({"id": str(user.id)}, salt="password-reset")
+        token = generate_url_safe_token({"email": str(email)}, salt="password-reset")
         send_email_with_template.delay(
-            [user.email],
+            [email],
             "Job Tracker Account Password Reset",
             {
-                "username": user.userName,
+                "email": email,
                 "reset_url": f"http://{app_settings.APP_DOMAIN}/user/reset_password_form?token={token}",
             },
             "mail_password_reset.html",

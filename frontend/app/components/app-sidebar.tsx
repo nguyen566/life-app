@@ -19,7 +19,7 @@ export function AppSidebar({
   const menuItems = [
     {
       title: "Dashboard",
-      url: APP_ROUTES.DASHBOARD,
+      url: "/",
     },
     {
       title: "Submit Job Application",

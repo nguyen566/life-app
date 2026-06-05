@@ -40,8 +40,6 @@ export default function AccountPage() {
               <Input id="email" value={data.email} readOnly />
               <Label>Date of Birth</Label>
               <Input id="dob" value={data.dob} readOnly />
-              <Label>Phone</Label>
-              <Input id="phone" value={`${data.phone}`} readOnly />
 
               <Button className="w-min ml-auto" onClick={logout}>
                 Log Out
