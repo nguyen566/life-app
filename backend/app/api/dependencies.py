@@ -1,6 +1,4 @@
 from typing import Annotated
-from uuid import UUID
-
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -34,7 +32,7 @@ async def get_logged_in_user(
     decoded_token: Annotated[dict, Depends(get_access_token)],
     session: SessionDep,
 ) -> UserResult:
-    user = await session.get(User, UUID(decoded_token["user"]["id"]))
+    user = await session.get(User, decoded_token["user"]["email"])
 
     if not user:
         raise EntityNotFound()

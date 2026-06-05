@@ -1,16 +1,20 @@
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 export const APP_ROUTES = {
-  LOGIN: "/login",
-  FORGOT_PASSWORD: "/forgot-password",
-  DASHBOARD: "/dashboard",
   ACCOUNT: "/me",
+  DASHBOARD: "/dashboard",
+  FORGOT_PASSWORD: "/forgot-password",
+  LOGIN: "/login",
+  SIGNUP: "/sign-up",
   SUBMIT_JOB_APPLICATION: "/submit-job-application",
+  VERIFY_EMAIL: "/verify",
 };
 
 export default [
-  route(APP_ROUTES.LOGIN, "routes/login.tsx"),
   route(APP_ROUTES.FORGOT_PASSWORD, "routes/forgot-password.tsx"),
+  route(APP_ROUTES.LOGIN, "routes/login.tsx"),
+  route(APP_ROUTES.VERIFY_EMAIL, "routes/verify-email.tsx"),
+  route(APP_ROUTES.SIGNUP, "routes/signup.tsx"),
   route("/", "layouts/protected-layout.tsx", [
     index("routes/dashboard.tsx"),
     route(APP_ROUTES.ACCOUNT, "routes/account.tsx"),

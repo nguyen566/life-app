@@ -1,5 +1,4 @@
 from datetime import datetime
-from uuid import UUID
 
 from pydantic import BaseModel, EmailStr, Field
 
@@ -9,12 +8,10 @@ class BaseUser(BaseModel):
     lastName: str
     email: EmailStr
     dob: datetime
-    userName: str
-    phone: int | None
 
 
 class UserResult(BaseUser):
-    id: UUID = Field(description="Unique identifier for a user")
+    pass
 
 
 class UserInput(BaseUser):
@@ -23,7 +20,6 @@ class UserInput(BaseUser):
 
 
 class UserUpdate(BaseModel):
-    email: str | None = Field(default=None)
     dob: datetime | None = Field(default=None)
     password_hash: str | None = Field(default=None)
     email_verified: bool | None = Field(default=None)

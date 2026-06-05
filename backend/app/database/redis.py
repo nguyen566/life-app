@@ -8,14 +8,6 @@ _token_blacklist = Redis(
     db=0,
 )
 
-
-# async def add_jti_to_blacklist(jti: str):
-#     await _token_blacklist.set(jti, "blacklisted")
-
-
-# async def is_jti_blacklisted(jti: str) -> bool:
-#     return bool(await (_token_blacklist.exists(jti)))
- 
 async def add_jti_to_blacklist(jti: str):
     async with _token_blacklist as redis:
         await redis.set(jti, "blacklisted")
