@@ -10,6 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
+import { APP_ROUTES } from "~/routes";
 
 export function AppSidebar({
   currentRoute,
@@ -18,15 +19,15 @@ export function AppSidebar({
   const menuItems = [
     {
       title: "Dashboard",
-      url: "/dashboard",
+      url: APP_ROUTES.DASHBOARD,
     },
     {
       title: "Submit Job Application",
-      url: "/job-applications",
+      url: APP_ROUTES.SUBMIT_JOB_APPLICATION,
     },
     {
       title: "Account",
-      url: "/me",
+      url: APP_ROUTES.ACCOUNT,
     },
   ];
 
