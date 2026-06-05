@@ -6,15 +6,17 @@ export const APP_ROUTES = {
   DASHBOARD: "/dashboard",
   ACCOUNT: "/me",
   SUBMIT_JOB_APPLICATION: "/submit-job-application",
-} 
+};
 
 export default [
-  index("routes/home.tsx"),
   route(APP_ROUTES.LOGIN, "routes/login.tsx"),
   route(APP_ROUTES.FORGOT_PASSWORD, "routes/forgot-password.tsx"),
   route("/", "layouts/protected-layout.tsx", [
-    route(APP_ROUTES.DASHBOARD, "routes/dashboard.tsx"),
+    index("routes/dashboard.tsx"),
     route(APP_ROUTES.ACCOUNT, "routes/account.tsx"),
-    route(APP_ROUTES.SUBMIT_JOB_APPLICATION, "routes/submit-job-application.tsx"),
+    route(
+      APP_ROUTES.SUBMIT_JOB_APPLICATION,
+      "routes/submit-job-application.tsx",
+    ),
   ]),
 ] satisfies RouteConfig;

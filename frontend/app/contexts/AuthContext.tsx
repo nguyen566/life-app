@@ -48,7 +48,7 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         localStorage.setItem(AuthCacheType.TOKEN, data.access_token);
 
         toast.success("Login successful!");
-        navigate("/dashboard");
+        navigate("/");
       }
     } catch (e) {
       toast.error("Login failed. Please check your credentials and try again.");
