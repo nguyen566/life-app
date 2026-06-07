@@ -34,10 +34,10 @@ import {
 } from "./ui/dialog";
 import { Spinner } from "./ui/spinner";
 import axios from "axios";
+import { useMutation } from "@tanstack/react-query";
 
 export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   const navigate = useNavigate();
-  const [isPending, setIsPending] = useState(false);
   const [openSuccess, setOpenSuccess] = useState(false);
   const [openError, setOpenError] = useState(false);
   const [errorMessage, setErrorMessage] =
@@ -49,25 +49,25 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
   };
 
   const createUser = async (userInfo: UserInput) => {
-    setIsPending(true);
+    const { data } = await api.user.registerUserUserRegisterPost(userInfo);
+    return data;
+  };
 
-    try {
-      const { data } = await api.user.registerUserUserRegisterPost(userInfo);
-      if (data) {
-        setOpenSuccess(true);
-      }
-    } catch (e) {
-      if (axios.isAxiosError(e)) {
-        const errorRes: CommonHTTPResponse = e?.response?.data;
+  const { isPending, mutate } = useMutation({
+    mutationFn: createUser,
+    onSuccess: () => {
+      setOpenSuccess(true);
+    },
+    onError: (error) => {
+      if (axios.isAxiosError(error)) {
+        const errorRes: CommonHTTPResponse = error?.response?.data;
         if (errorRes?.detail) {
           setErrorMessage(errorRes.detail);
         }
       }
       setOpenError(true);
-    } finally {
-      setIsPending(false);
-    }
-  };
+    },
+  });
 
   const formSchema = z
     .object({
@@ -87,12 +87,12 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
     resolver: zodResolver(formSchema),
     mode: "all",
     defaultValues: {
-      firstName: "Randy",
-      lastName: "Nguyen",
-      dob: "01/01/2000",
-      email: "randy.tnguyen123@gmail.com",
-      password: "password",
-      confirm_password: "password",
+      firstName: "",
+      lastName: "",
+      dob: "",
+      email: "",
+      password: "",
+      confirm_password: "",
     },
     disabled: isPending,
   });
@@ -113,7 +113,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
       ...data,
       dob: new Date(`${data.dob}T00:00:00Z`).toISOString(),
     } satisfies UserInput;
-    await createUser(userInput);
+    mutate(userInput);
   };
 
   return (
@@ -231,6 +231,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                       required
                       aria-invalid={fieldState.invalid}
                       placeholder="Password"
+                      autoComplete="new-password"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />
@@ -255,6 +256,7 @@ export function SignupForm({ ...props }: React.ComponentProps<typeof Card>) {
                       required
                       aria-invalid={fieldState.invalid}
                       placeholder="Confirm password"
+                      autoComplete="new-password"
                     />
                     {fieldState.invalid && (
                       <FieldError errors={[fieldState.error]} />

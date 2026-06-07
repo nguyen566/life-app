@@ -1,3 +1,4 @@
+import axios from "axios";
 import { createContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { toast } from "sonner";
@@ -51,6 +52,11 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         navigate("/");
       }
     } catch (e) {
+      if (axios.isAxiosError(e) && e?.response?.data?.detail) {
+        toast.error(e.response.data.detail);
+        return;
+      }
+
       toast.error("Login failed. Please check your credentials and try again.");
     }
   };
