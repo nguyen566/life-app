@@ -1,5 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { useContext } from "react";
+import axios from "axios";
+import { useContext, useEffect } from "react";
+import { useNavigate } from "react-router";
+import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
@@ -11,14 +14,39 @@ import { APP_ROUTES } from "~/routes";
 
 export default function AccountPage() {
   const { logout } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-  const { isLoading, data } = useQuery({
+  const { isLoading, data, isError, error } = useQuery({
     queryKey: ["account"],
     queryFn: async () => {
       const { data } = await api.user.getCurrentProfileUserMeGet();
       return data;
     },
+    retry: (failureCount, error) => {
+      if (axios.isAxiosError(error) && error.response?.status === 401) {
+        return false;
+      }
+
+      return failureCount < 3;
+    },
   });
+
+  useEffect(() => {
+    if (!isError) {
+      return;
+    }
+
+    if (axios.isAxiosError(error)) {
+      const errorRes = error?.response;
+      if (errorRes?.status === 401) {
+        navigate("/login");
+        toast.error(
+          errorRes?.data?.details ??
+            "Unauthorized access. Please sign in again.",
+        );
+      }
+    }
+  }, [isError, error, navigate]);
 
   return (
     <SidebarLayout

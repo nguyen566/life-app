@@ -1,3 +1,4 @@
+import { useNavigate } from "react-router";
 import { toast } from "sonner";
 import { Button } from "~/components/ui/button";
 import {
@@ -16,6 +17,8 @@ export function ForgotPasswordForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const navigate = useNavigate();
+
   const sendResetLink = async (formData: FormData) => {
     const email = formData.get("email")?.toString();
 
@@ -31,6 +34,7 @@ export function ForgotPasswordForm({
       toast.info(
         "If an account with that email exists, a password reset link has been sent.",
       );
+      navigate("/login")
     }
   };
 

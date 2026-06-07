@@ -15,17 +15,19 @@ import {
   FieldLabel,
 } from "~/components/ui/field";
 import { Input } from "~/components/ui/input";
-import { useContext } from "react";
+import { useContext, useState } from "react";
 import { AuthContext } from "~/contexts/AuthContext";
 import z from "zod";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Spinner } from "./ui/spinner";
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
   const { login } = useContext(AuthContext);
+  const [isPending, setIsPending] = useState(false);
 
   const formSchema = z.object({
     email: z.email().min(1, "Please enter a valid email"),
@@ -49,10 +51,10 @@ export function LoginForm({
     if (!email || !password) {
       return;
     }
-
-    await login(email, password);
+    setIsPending(true);
+    await login(email, password).then(() => setIsPending(false));
   };
-  
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card>
@@ -73,6 +75,7 @@ export function LoginForm({
                     <FieldLabel htmlFor="email">Email</FieldLabel>
                     <Input
                       {...field}
+                      autoComplete="email"
                       id="email"
                       name="email"
                       type="email"
@@ -95,6 +98,7 @@ export function LoginForm({
 
                     <Input
                       {...field}
+                      autoComplete="new-password"
                       id="password"
                       name="password"
                       type="password"
@@ -117,7 +121,14 @@ export function LoginForm({
                     Forgot your password?
                   </a>
                 </div>
-                <Button type="submit" form="login-form">
+                <Button
+                  type="submit"
+                  variant="outline"
+                  className="rounded-full"
+                  disabled={isPending}
+                  form="login-form"
+                >
+                  {isPending ? <Spinner data-icon="inline-start" /> : null}
                   Login
                 </Button>
                 <FieldDescription className="text-center">
