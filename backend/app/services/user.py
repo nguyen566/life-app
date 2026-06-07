@@ -48,7 +48,7 @@ class UserService:
         except IntegrityError:
             await self.session.rollback()
             raise DuplicateUser()
-            
+
         await self.session.refresh(user)
 
         return user
@@ -107,7 +107,6 @@ class UserService:
                 "Verify your email",
                 {
                     "email": result.email,
-                    # "verify_url": f"http://{app_settings.WEB_APP_DOMAIN}/user/verify?token={token}",
                     "verify_url": f"http://{app_settings.WEB_APP_DOMAIN}/verify?token={token}",
                 },
                 "mail_verify_email.html",
@@ -144,7 +143,7 @@ class UserService:
             "Job Tracker Account Password Reset",
             {
                 "email": email,
-                "reset_url": f"http://{app_settings.APP_DOMAIN}/user/reset_password_form?token={token}",
+                "reset_url": f"http://{app_settings.WEB_APP_DOMAIN}/reset-password?token={token}",
             },
             "mail_password_reset.html",
         )
