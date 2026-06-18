@@ -62,7 +62,18 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   const logout = async () => {
-    await api.user.logoutUserUserLogoutGet();
+    try {
+      // Attempt to log user out but if cannot, we need to remove cache
+      await api.user.logoutUserUserLogoutGet();
+    } finally {
+      setToken(null);
+      api.setSecurityData(null);
+
+      // Clear the cached token
+      localStorage.removeItem(AuthCacheType.TOKEN);
+      navigate("/login");
+    }
+    // await api.user.logoutUserUserLogoutGet();
     setToken(null);
     api.setSecurityData(null);
 

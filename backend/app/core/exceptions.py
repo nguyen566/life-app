@@ -26,6 +26,10 @@ class InsufficientData(BaseCustomError):
     detail: str = "Insufficient data provided"
     status = status.HTTP_400_BAD_REQUEST
 
+class InvalidFileType(BaseCustomError):
+    detail: str = "Only CSV and XLSX files are supported"
+    status = status.HTTP_400_BAD_REQUEST
+
 
 class InvalidToken(BaseCustomError):
     detail: str = "Invalid or expired access token"
@@ -36,6 +40,10 @@ class NotAuthenticatedUser(BaseCustomError):
     detail: str = "User is not authenticated"
     status = status.HTTP_401_UNAUTHORIZED
 
+
+class NoFileFound(BaseCustomError):
+    detail: str = "No file provided"
+    status = status.HTTP_400_BAD_REQUEST
 
 class UnverifiedEmail(BaseCustomError):
     detail: str = "Email is not verified"

@@ -127,12 +127,18 @@ export function SubmitJobApplicationForm({
         <Button
           disabled={isPending}
           type="button"
+          className="rounded-full"
           variant="outline"
           onClick={() => form.reset()}
         >
           Reset
         </Button>
-        <Button disabled={isPending} type="submit" form="job-application-form">
+        <Button
+          className="rounded-full"
+          disabled={isPending}
+          type="submit"
+          form="job-application-form"
+        >
           Submit
         </Button>
       </Field>

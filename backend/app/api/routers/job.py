@@ -1,10 +1,11 @@
 from uuid import UUID
 
-from fastapi import APIRouter
+from fastapi import APIRouter, File, UploadFile
 
 from app.database.models import JobApplication
+from app.api.schemas.response import CommonHTTPResponse
 
-from ..dependencies import CurrentUserDep, JobServiceDep
+from ..dependencies import CurrentUserDep, JobServiceDep, SecureTokenDep
 from ..schemas import (
     JobApplicationCreate,
     JobApplicationResult,
@@ -42,6 +43,16 @@ async def create_job_application(
     service: JobServiceDep,
 ) -> JobApplication:
     return await service.add(body, user)
+
+
+@router.post("/upload")
+async def upload_file(
+    _: SecureTokenDep,
+    user: CurrentUserDep,
+    service: JobServiceDep,
+    file: UploadFile = File(...),
+) -> CommonHTTPResponse:
+    return await service.mass_add(user, file)
 
 
 @router.patch("/{id}")

@@ -1,5 +1,5 @@
 from typing import Annotated
-from fastapi import Depends
+from fastapi import Depends, Security
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import EntityNotFound, InvalidToken, NotAuthenticatedUser
@@ -25,6 +25,10 @@ async def get_access_token(token: Annotated[str, Depends(oauth2_scheme)]) -> dic
     if not decoded_token or await is_jti_blacklisted(decoded_token["jti"]):
         raise InvalidToken()
     return decoded_token
+
+
+# Security-wrapped access token for explicit OpenAPI marking
+SecureTokenDep = Annotated[dict, Security(get_access_token)]
 
 
 # Get Logged in User

@@ -49,6 +49,12 @@ export interface BodyResetPasswordUserResetPasswordPost {
   password: string;
 }
 
+/** Body_upload_file_jobs_applied_upload_post */
+export interface BodyUploadFileJobsAppliedUploadPost {
+  /** File */
+  file: File | Blob;
+}
+
 /** CommonHTTPResponse */
 export interface CommonHTTPResponse {
   /**
@@ -118,6 +124,17 @@ export interface JobApplicationCreate {
    * Job listing site (e.g., LinkedIn, Indeed)
    */
   site?: string | null;
+  /**
+   * Date Applied
+   * Date when the application was submitted; defaults to current time if omitted
+   * @format date-time
+   */
+  date_applied?: string;
+  /**
+   * Current status of the job application; defaults to APPLIED if omitted
+   * @default "Applied"
+   */
+  status?: JobStatus | null;
 }
 
 /** JobApplicationResult */
@@ -152,14 +169,14 @@ export interface JobApplicationResult {
    * Date Applied
    * Date when the application was submitted
    * @format date-time
-   * @default "2026-06-05T13:29:44.227942"
+   * @default "2026-06-18T13:54:34.135123"
    */
   date_applied?: string;
   /**
    * Date Modified
    * Date when the application was last updated
    * @format date-time
-   * @default "2026-06-05T13:29:44.227963"
+   * @default "2026-06-18T13:54:34.135161"
    */
   date_modified?: string;
   /**
@@ -536,6 +553,29 @@ export class Api<
         path: `/jobs-applied/${id}`,
         method: "DELETE",
         secure: true,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags Jobs Applied
+     * @name UploadFileJobsAppliedUploadPost
+     * @summary Upload File
+     * @request POST:/jobs-applied/upload
+     * @secure
+     */
+    uploadFileJobsAppliedUploadPost: (
+      data: BodyUploadFileJobsAppliedUploadPost,
+      params: RequestParams = {},
+    ) =>
+      this.request<CommonHTTPResponse, HTTPValidationError>({
+        path: `/jobs-applied/upload`,
+        method: "POST",
+        body: data,
+        secure: true,
+        type: ContentType.FormData,
         format: "json",
         ...params,
       }),
