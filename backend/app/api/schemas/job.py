@@ -30,10 +30,18 @@ class JobApplicationResult(BaseJobApplication):
 
 
 class JobApplicationCreate(BaseJobApplication):
-    pass
+    date_applied: datetime = Field(
+        default_factory=lambda: datetime.now(),
+        description="Date when the application was submitted; defaults to current time if omitted",
+    )
+    status: JobStatus | None = Field(
+        default=JobStatus.APPLIED,
+        description="Current status of the job application; defaults to APPLIED if omitted",
+    )
 
 
 class JobApplicationUpdate(BaseModel):
     status: JobStatus | None = Field(
         default=None, description="Current status of the job application"
     )
+

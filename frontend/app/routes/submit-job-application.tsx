@@ -1,4 +1,5 @@
 import { SubmitJobApplicationForm } from "~/components/submit-job-application-form";
+import { FileUploader } from "~/components/ui/fileuploader";
 import SidebarLayout from "~/layouts/sidebar-layout";
 import { APP_ROUTES } from "~/routes";
 
@@ -9,7 +10,8 @@ export default function SubmitJobApplicationPage() {
       header="Submit Job Application"
       children={
         <div className="flex flex-1 flex-col gap-4 p-4 pt-0">
-          <SubmitJobApplicationForm />
+            <SubmitJobApplicationForm />
+            <FileUploader className="w-lg" />
         </div>
       }
     />

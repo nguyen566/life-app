@@ -11,7 +11,9 @@ export default function DashboardPage() {
   const { isLoading, data } = useQuery({
     queryKey: ["job-applications"],
     queryFn: async () => {
-      const { data } = await api.jobsApplied.getJobsAppliedJobsAppliedGet();
+      const { data } = await api.jobsApplied.getJobsAppliedJobsAppliedGet(
+        {secure: true}
+      );
       return data;
     },
   });

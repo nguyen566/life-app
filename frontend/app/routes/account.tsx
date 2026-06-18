@@ -39,7 +39,7 @@ export default function AccountPage() {
     if (axios.isAxiosError(error)) {
       const errorRes = error?.response;
       if (errorRes?.status === 401) {
-        navigate("/login");
+        logout();
         toast.error(
           errorRes?.data?.details ??
             "Unauthorized access. Please sign in again.",

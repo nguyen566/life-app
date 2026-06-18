@@ -12,16 +12,14 @@ from app.api.schemas import (
     JobApplicationCreate,
     JobApplicationUpdate,
 )
+from app.api.schemas.response import CommonHTTPResponse
 from app.core.exceptions import (
     EntityNotFound,
     InsufficientData,
-    InvalidFileData,
     InvalidFileType,
     NoFileFound,
-    ParseFailure,
 )
-from app.database.models import JobApplication, JobStatus, User
-from app.api.schemas.response import CommonHTTPResponse
+from app.database.models import JobApplication, User
 
 
 class JobApplicationService:
@@ -142,7 +140,7 @@ class JobApplicationService:
 
         # Check for any missing data in the required columns
         if df[required_columns].isnull().any(axis=None):
-            row_indexes = df[required_columns].isna().any(axis=1).nonzero()[0]
+            row_indexes = df.index[df[required_columns].isna().any(axis=1)]
             raise HTTPException(
                 detail=f"Rows with index {row_indexes.tolist()} contain missing data",
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -153,9 +151,13 @@ class JobApplicationService:
         errors: list[str] = []
         for _, row in df.iterrows():
             try:
-                # Convert date_applied into a UTC datetime
+                # Convert date_applied into a UTC datetime and normalize to tz-naive
                 try:
                     dt = pd.to_datetime(row["date_applied"], utc=True)
+                    if hasattr(dt, "to_pydatetime"):
+                        dt = dt.to_pydatetime()
+                    if dt.tzinfo is not None:
+                        dt = dt.replace(tzinfo=None)
                 except Exception as e_date:
                     errors.append(
                         f"Invalid date format at row '{row.name}': {e_date}. Using today's UTC time."
