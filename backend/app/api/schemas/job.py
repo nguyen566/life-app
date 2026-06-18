@@ -14,9 +14,6 @@ class BaseJobApplication(BaseModel):
 
 
 class JobApplicationResult(BaseJobApplication):
-    id: UUID = Field(
-        description="Unique identifier for the job application",
-    )
     status: JobStatus = Field(
         default=JobStatus.APPLIED, description="Current status of the job application"
     )
@@ -26,7 +23,6 @@ class JobApplicationResult(BaseJobApplication):
     date_modified: datetime = Field(
         default=datetime.now(), description="Date when the application was last updated"
     )
-    user_id: UUID
 
 
 class JobApplicationCreate(BaseJobApplication):

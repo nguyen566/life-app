@@ -1,22 +1,22 @@
-import type { FilePondErrorDescription, FilePondFile } from "filepond";
-import "filepond/dist/filepond.min.css";
-import { useEffect, useState } from "react";
-import { FilePond, registerPlugin } from "react-filepond";
-import { cn } from "~/lib/utils";
-import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
-import { toast } from "sonner";
-import { Button } from "./button";
 import { useMutation } from "@tanstack/react-query";
-import api from "~/lib/api";
 import axios from "axios";
-import { Spinner } from "./spinner";
+import type { FilePondErrorDescription, FilePondFile } from "filepond";
+import FilePondPluginFileValidateType from "filepond-plugin-file-validate-type";
+import "filepond/dist/filepond.min.css";
+import { useState } from "react";
+import { FilePond, registerPlugin } from "react-filepond";
+import { toast } from "sonner";
+import api from "~/lib/api";
+import { getUploadTemplate } from "~/lib/get-upload-template";
+import { cn } from "~/lib/utils";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "./accordion";
-import { getUploadTemplate } from "~/lib/get-upload-template";
+import { Button } from "./button";
+import { Spinner } from "./spinner";
 
 registerPlugin(FilePondPluginFileValidateType);
 
@@ -118,3 +118,4 @@ function FileUploader({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 export { FileUploader };
+

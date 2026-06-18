@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { JobApplicationCard } from "~/components/job-application-card";
+import { JobsTable } from "~/components/jobs-table";
 import { SpinnerCustom } from "~/components/ui/spinner";
 import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
@@ -11,9 +12,9 @@ export default function DashboardPage() {
   const { isLoading, data } = useQuery({
     queryKey: ["job-applications"],
     queryFn: async () => {
-      const { data } = await api.jobsApplied.getJobsAppliedJobsAppliedGet(
-        {secure: true}
-      );
+      const { data } = await api.jobsApplied.getJobsAppliedJobsAppliedGet({
+        secure: true,
+      });
       return data;
     },
   });
@@ -55,7 +56,7 @@ export default function DashboardPage() {
                 />
               </div>
               <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min">
-                <h2>Job Application Table Goes Here</h2>
+                <JobsTable jobs={data ?? []} />
               </div>
             </>
           )}

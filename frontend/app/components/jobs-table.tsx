@@ -11,7 +11,7 @@ import {
   type ColumnFiltersState,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Edit2Icon } from "lucide-react";
+import { ArrowUpDown, Edit2Icon, Save, X } from "lucide-react";
 import { JobStatus, type JobApplicationResult } from "~/lib/client";
 import { Button } from "./ui/button";
 import {
@@ -42,6 +42,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { Spinner } from "./ui/spinner";
 
 // Utility for creating a sortable header button.
 // The returned component receives the column context and renders a
@@ -65,6 +66,7 @@ export function JobsTable({
   jobs,
   ...props
 }: { jobs: JobApplicationResult[] } & React.ComponentProps<typeof Table>) {
+  const isPending = false;
   const [openDialog, setOpenDialog] = React.useState<boolean>(false);
   const [jobData, setJobData] = React.useState<
     JobApplicationResult | undefined
@@ -72,7 +74,11 @@ export function JobsTable({
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   );
+  const [jobStatus, setJobStatus] = React.useState<JobStatus>(
+    JobStatus.Applied,
+  );
   const [sorting, setSorting] = React.useState<SortingState>([]);
+  const jobStatusOptions: JobStatus[] = Object.values(JobStatus).map((x) => x);
 
   const beginRowEdit = (rowData: JobApplicationResult) => {
     if (!rowData) {
@@ -83,7 +89,21 @@ export function JobsTable({
     }
 
     setJobData(rowData);
+    if (rowData.status) {
+      setJobStatus(rowData.status);
+    }
     setOpenDialog(true);
+  };
+
+  const handleStatusChange = (value: JobStatus) => {
+    setJobStatus(value);
+  };
+
+  const handleSave = () => {
+    if (!jobData) return;
+    // TODO: perform PUT to backend to persist status change
+    console.log("Save jobData:", jobData);
+    setOpenDialog(false);
   };
 
   const columns: ColumnDef<JobApplicationResult>[] = [
@@ -236,36 +256,43 @@ export function JobsTable({
               <Label>Position</Label>
               <Input id="email" value={jobData.position} readOnly />
               <Label>Status</Label>
-              <Select
-                value={jobData.status}
-                onValueChange={() => {
-                  console.log(jobData);
-                }}
-              >
+              <Select value={jobStatus} onValueChange={handleStatusChange}>
                 <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select a status" />
+                  <SelectValue placeholder="Select a status">
+                    {jobStatus}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectGroup>
                     <SelectLabel>Status</SelectLabel>
-                    <SelectItem value={JobStatus.Accepted}>
-                      {JobStatus.Accepted}
-                    </SelectItem>
-                    <SelectItem value={JobStatus.Interviewing}>
-                      {JobStatus.Interviewing}
-                    </SelectItem>
-                    <SelectItem value={JobStatus.Rejected}>
-                      {JobStatus.Rejected}
-                    </SelectItem>
+                    {jobStatusOptions.map((x) => (
+                      <SelectItem value={x}>{x}</SelectItem>
+                    ))}
                   </SelectGroup>
                 </SelectContent>
               </Select>
             </div>
           ) : null}
-          <DialogFooter className="sm:justify-start">
+          <DialogFooter className="flex justify-between">
             <DialogClose asChild>
-              <Button type="button" onClick={() => setOpenDialog(false)}>
+              <Button
+                type="button"
+                disabled={isPending}
+                onClick={() => setOpenDialog(false)}
+              >
+                <X />
                 Close
+              </Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button
+                type="button"
+                disabled={isPending || jobData?.status === jobStatus}
+                onClick={handleSave}
+              >
+                {isPending ? <Spinner data-icon="inline-start" /> : null}
+                <Save />
+                Save
               </Button>
             </DialogClose>
           </DialogFooter>
