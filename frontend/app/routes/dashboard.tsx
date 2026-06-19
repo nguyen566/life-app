@@ -6,7 +6,7 @@ import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
 import { JobStatus } from "~/lib/client";
 import { ExtraJobStatus, getJobApplicationCardInfo } from "~/lib/utils";
-import { APP_ROUTES } from "~/routes";
+import { APP_ROUTES } from "~/route-constants";
 
 export default function DashboardPage() {
   const { isLoading, data } = useQuery({

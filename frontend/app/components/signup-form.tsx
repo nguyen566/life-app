@@ -22,7 +22,7 @@ import {
 import { Input } from "~/components/ui/input";
 import api from "~/lib/api";
 import type { CommonHTTPResponse, UserInput } from "~/lib/client";
-import { APP_ROUTES } from "~/routes";
+import { APP_ROUTES } from "~/route-constants";
 import {
   Dialog,
   DialogClose,

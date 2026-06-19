@@ -10,7 +10,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "~/components/ui/sidebar";
-import { APP_ROUTES } from "~/routes";
+import { APP_ROUTES } from "~/route-constants";
 
 export function AppSidebar({
   currentRoute,

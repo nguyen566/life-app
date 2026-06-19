@@ -1,7 +1,7 @@
 import { SubmitJobApplicationForm } from "~/components/submit-job-application-form";
 import { FileUploader } from "~/components/ui/fileuploader";
 import SidebarLayout from "~/layouts/sidebar-layout";
-import { APP_ROUTES } from "~/routes";
+import { APP_ROUTES } from "~/route-constants";
 
 export default function SubmitJobApplicationPage() {
   return (
