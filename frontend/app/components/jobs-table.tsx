@@ -103,7 +103,12 @@ export function JobsTable({
   const [jobStatus, setJobStatus] = React.useState<JobStatus>(
     JobStatus.Applied,
   );
-  const [sorting, setSorting] = React.useState<SortingState>([]);
+  const [sorting, setSorting] = React.useState<SortingState>([
+    {
+      id: "date_applied",
+      desc: true,
+    },
+  ]);
   const jobStatusOptions: JobStatus[] = Object.values(JobStatus).map((x) => x);
 
   const beginRowEdit = (rowData: JobApplicationResult) => {
@@ -243,17 +248,8 @@ export function JobsTable({
     getCoreRowModel: getCoreRowModel(),
     onSortingChange: setSorting,
     getSortedRowModel: getSortedRowModel(),
-    onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
-    initialState: {
-      sorting: [
-        {
-          id: "date_applied",
-          desc: true,
-        },
-      ],
-    },
     state: {
       sorting,
       columnFilters,
@@ -326,10 +322,7 @@ export function JobsTable({
           </Table>
         </div>
         <div className="flex items-center justify-between px-2">
-          <div className="flex-1 text-sm text-muted-foreground">
-            {table.getFilteredSelectedRowModel().rows.length} of{" "}
-            {table.getFilteredRowModel().rows.length} row(s) selected.
-          </div>
+          <div className="flex-1 ">{/* Empty Div */}</div>
           <div className="flex items-center space-x-6 lg:space-x-8">
             <div className="flex items-center space-x-2">
               <p className="text-sm font-medium">Rows per page</p>
