@@ -29,30 +29,34 @@ export default function DashboardPage() {
             <SpinnerCustom />
           ) : (
             <>
-              <div className="grid auto-rows-min gap-1 md:grid-cols-4">
+              <div className="flex flex-col md:flex-row  gap-4">
                 <JobApplicationCard
                   applicationInfo={getJobApplicationCardInfo(
                     data ?? [],
                     ExtraJobStatus.TOTAL,
                   )}
+                  className="flex-1"
                 />
                 <JobApplicationCard
                   applicationInfo={getJobApplicationCardInfo(
                     data ?? [],
                     JobStatus.Applied,
                   )}
+                  className="flex-1"
                 />
                 <JobApplicationCard
                   applicationInfo={getJobApplicationCardInfo(
                     data ?? [],
                     JobStatus.Interviewing,
                   )}
+                  className="flex-1"
                 />
                 <JobApplicationCard
                   applicationInfo={getJobApplicationCardInfo(
                     data ?? [],
                     JobStatus.Rejected,
                   )}
+                  className="flex-1"
                 />
               </div>
               <div className="min-h-screen flex-1 rounded-xl bg-muted/50 md:min-h-min">

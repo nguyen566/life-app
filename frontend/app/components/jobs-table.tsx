@@ -4,6 +4,7 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
+  getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
   type Column,
@@ -11,8 +12,19 @@ import {
   type ColumnFiltersState,
   type SortingState,
 } from "@tanstack/react-table";
-import { ArrowUpDown, Edit2Icon, Save, X } from "lucide-react";
+import {
+  ArrowUpDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Edit2Icon,
+  Save,
+  X,
+} from "lucide-react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { JobStatus, type JobApplicationResult } from "~/lib/client";
+import api from "~/lib/api";
 import { Button } from "./ui/button";
 import {
   Dialog,
@@ -46,8 +58,7 @@ import { Spinner } from "./ui/spinner";
 
 // Utility for creating a sortable header button.
 // The returned component receives the column context and renders a
-// Button that toggles sorting when clicked. It replicates the
-// pattern used in line ~34 (the "Company" column).
+// Button that toggles sorting when clicked.
 const sortableHeader =
   (label: string) =>
   ({ column }: { column: Column<JobApplicationResult, unknown> }) => {
@@ -62,11 +73,26 @@ const sortableHeader =
     );
   };
 
+const utcDateFormatter = new Intl.DateTimeFormat("en-US", {
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  timeZone: "UTC",
+});
+
+const formatUtcDate = (value?: string) => {
+  if (!value) {
+    return "";
+  }
+
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? value : utcDateFormatter.format(date);
+};
+
 export function JobsTable({
   jobs,
-  ...props
 }: { jobs: JobApplicationResult[] } & React.ComponentProps<typeof Table>) {
-  const isPending = false;
+  const queryClient = useQueryClient();
   const [openDialog, setOpenDialog] = React.useState<boolean>(false);
   const [jobData, setJobData] = React.useState<
     JobApplicationResult | undefined
@@ -99,11 +125,33 @@ export function JobsTable({
     setJobStatus(value);
   };
 
+  const updateJobApplication = async (payload: {
+    id: string;
+    status: JobStatus;
+  }) => {
+    const { data } =
+      await api.jobsApplied.updateJobApplicationJobsAppliedIdPatch(payload.id, {
+        status: payload.status,
+      });
+    return data;
+  };
+
+  const { isPending, mutate } = useMutation({
+    mutationFn: updateJobApplication,
+    onSuccess: (updatedJob) => {
+      setJobData(updatedJob);
+      queryClient.invalidateQueries({ queryKey: ["job-applications"] });
+      toast.success("Job status updated successfully");
+      setOpenDialog(false);
+    },
+    onError: () => {
+      toast.error("Failed to update job status. Please try again.");
+    },
+  });
+
   const handleSave = () => {
     if (!jobData) return;
-    // TODO: perform PUT to backend to persist status change
-    console.log("Save jobData:", jobData);
-    setOpenDialog(false);
+    mutate({ id: jobData.id, status: jobStatus });
   };
 
   const columns: ColumnDef<JobApplicationResult>[] = [
@@ -156,10 +204,36 @@ export function JobsTable({
     {
       accessorKey: "date_applied",
       header: sortableHeader("Date Applied"),
+      cell: ({ row }) => (
+        <span>{formatUtcDate(row.getValue("date_applied"))}</span>
+      ),
+      sortingFn: (rowA, rowB, columnId) => {
+        const dateA = new Date(rowA.getValue(columnId));
+        const dateB = new Date(rowB.getValue(columnId));
+
+        // Handle invalid dates to prevent breaking the UI
+        if (isNaN(dateA.getTime())) return 1;
+        if (isNaN(dateB.getTime())) return -1;
+
+        return dateA.getTime() - dateB.getTime();
+      },
     },
     {
       accessorKey: "date_modified",
       header: sortableHeader("Date Modified"),
+      cell: ({ row }) => (
+        <span>{formatUtcDate(row.getValue("date_modified"))}</span>
+      ),
+      sortingFn: (rowA, rowB, columnId) => {
+        const dateA = new Date(rowA.getValue(columnId));
+        const dateB = new Date(rowB.getValue(columnId));
+
+        // Handle invalid dates to prevent breaking the UI
+        if (isNaN(dateA.getTime())) return 1;
+        if (isNaN(dateB.getTime())) return -1;
+
+        return dateA.getTime() - dateB.getTime();
+      },
     },
   ];
 
@@ -171,6 +245,15 @@ export function JobsTable({
     getSortedRowModel: getSortedRowModel(),
     onColumnFiltersChange: setColumnFilters,
     getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    initialState: {
+      sorting: [
+        {
+          id: "date_applied",
+          desc: true,
+        },
+      ],
+    },
     state: {
       sorting,
       columnFilters,
@@ -179,7 +262,7 @@ export function JobsTable({
 
   return (
     <>
-      <div>
+      <div className="overflow-auto">
         <div className="flex items-center py-4">
           <Input
             placeholder="Filter companies..."
@@ -192,7 +275,7 @@ export function JobsTable({
             className="max-w-sm"
           />
         </div>
-        <div className="overflow-hidden rounded-md border">
+        <div className="overflow-auto rounded-md border">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -242,10 +325,90 @@ export function JobsTable({
             </TableBody>
           </Table>
         </div>
+        <div className="flex items-center justify-between px-2">
+          <div className="flex-1 text-sm text-muted-foreground">
+            {table.getFilteredSelectedRowModel().rows.length} of{" "}
+            {table.getFilteredRowModel().rows.length} row(s) selected.
+          </div>
+          <div className="flex items-center space-x-6 lg:space-x-8">
+            <div className="flex items-center space-x-2">
+              <p className="text-sm font-medium">Rows per page</p>
+              <Select
+                value={`${table.getState().pagination.pageSize}`}
+                onValueChange={(value) => {
+                  table.setPageSize(Number(value));
+                }}
+              >
+                <SelectTrigger className="h-8 w-17.5">
+                  <SelectValue
+                    placeholder={table.getState().pagination.pageSize}
+                  />
+                </SelectTrigger>
+                <SelectContent side="top">
+                  {[10, 20, 25, 30, 40, 50].map((pageSize) => (
+                    <SelectItem key={pageSize} value={`${pageSize}`}>
+                      {pageSize}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex w-25 items-center justify-center text-sm font-medium">
+              Page {table.getState().pagination.pageIndex + 1} of{" "}
+              {table.getPageCount()}
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden size-8 lg:flex"
+                onClick={() => table.setPageIndex(0)}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to first page</span>
+                <ChevronsLeft />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                onClick={() => table.previousPage()}
+                disabled={!table.getCanPreviousPage()}
+              >
+                <span className="sr-only">Go to previous page</span>
+                <ChevronLeft />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="size-8"
+                onClick={() => table.nextPage()}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to next page</span>
+                <ChevronRight />
+              </Button>
+              <Button
+                variant="outline"
+                size="icon"
+                className="hidden size-8 lg:flex"
+                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                disabled={!table.getCanNextPage()}
+              >
+                <span className="sr-only">Go to last page</span>
+                <ChevronsRight />
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <Dialog open={openDialog}>
-        <DialogContent className="sm:max-w-md" showCloseButton={false}>
+        <DialogContent
+          aria-describedby="Editing job application"
+          className="sm:max-w-md"
+          showCloseButton={false}
+        >
           <DialogHeader>
             <DialogTitle>Job Application</DialogTitle>
           </DialogHeader>
@@ -266,7 +429,9 @@ export function JobsTable({
                   <SelectGroup>
                     <SelectLabel>Status</SelectLabel>
                     {jobStatusOptions.map((x) => (
-                      <SelectItem value={x}>{x}</SelectItem>
+                      <SelectItem key={x} value={x}>
+                        {x}
+                      </SelectItem>
                     ))}
                   </SelectGroup>
                 </SelectContent>
@@ -284,17 +449,15 @@ export function JobsTable({
                 Close
               </Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button
-                type="button"
-                disabled={isPending || jobData?.status === jobStatus}
-                onClick={handleSave}
-              >
-                {isPending ? <Spinner data-icon="inline-start" /> : null}
-                <Save />
-                Save
-              </Button>
-            </DialogClose>
+            <Button
+              type="button"
+              disabled={isPending || !jobData || jobData.status === jobStatus}
+              onClick={handleSave}
+            >
+              {isPending ? <Spinner data-icon="inline-start" /> : null}
+              <Save />
+              Save
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

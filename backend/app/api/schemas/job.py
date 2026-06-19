@@ -14,6 +14,9 @@ class BaseJobApplication(BaseModel):
 
 
 class JobApplicationResult(BaseJobApplication):
+    id: UUID = Field(
+        description="Unique identifier for the job application",
+    )
     status: JobStatus = Field(
         default=JobStatus.APPLIED, description="Current status of the job application"
     )
@@ -40,4 +43,3 @@ class JobApplicationUpdate(BaseModel):
     status: JobStatus | None = Field(
         default=None, description="Current status of the job application"
     )
-
