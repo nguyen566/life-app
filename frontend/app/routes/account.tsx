@@ -10,7 +10,7 @@ import { SpinnerCustom } from "~/components/ui/spinner";
 import { AuthContext } from "~/contexts/AuthContext";
 import SidebarLayout from "~/layouts/sidebar-layout";
 import api from "~/lib/api";
-import { APP_ROUTES } from "~/routes";
+import { APP_ROUTES } from "~/route-constants";
 
 export default function AccountPage() {
   const { logout } = useContext(AuthContext);

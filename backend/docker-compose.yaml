@@ -3,9 +3,9 @@ services:
     build: .
     env_file: .env
     environment:
-      POSTGRES_SERVER: db
-      POSTGRES_DB: "job_tracker"
-      POSTGRES_PASSWORD: "password"
+      POSTGRES_SERVER: db # Leave this to point to the service below
+      POSTGRES_DB: # This is the name of the db you use below
+      POSTGRES_PASSWORD: # Password of the db you use below
       REDIS_HOST: redis
     expose:
       - 8000
@@ -18,9 +18,9 @@ services:
   db:
     image: postgres
     environment:
-      POSTGRES_USER: "postgres"
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "job_tracker"
+      POSTGRES_USER: "postgres" # Leave as is or create your own
+      POSTGRES_PASSWORD: "password" # Leave as is or create your own
+      POSTGRES_DB: # Create a database name
     ports:
       - "5433:5432"
     volumes:
@@ -35,6 +35,18 @@ services:
     environment:
       REDIS_HOST: redis
 
+  react:
+    build:
+      context: ../frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - ../frontend/.env
+    environment:
+      - PORT=5173
+    command: ["npm", "run", "start"]
+    depends_on:
+      - api
 
 volumes:
   postgres_data:
