@@ -26,7 +26,6 @@ class JobApplicationResult(BaseJobApplication):
     date_modified: datetime = Field(
         default=datetime.now(), description="Date when the application was last updated"
     )
-    user_id: UUID
 
 
 class JobApplicationCreate(BaseJobApplication):
@@ -44,4 +43,3 @@ class JobApplicationUpdate(BaseModel):
     status: JobStatus | None = Field(
         default=None, description="Current status of the job application"
     )
-

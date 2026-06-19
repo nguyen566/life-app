@@ -20,12 +20,8 @@ async def get_jobs_applied(
     _: CurrentUserDep, service: JobServiceDep
 ) -> list[JobApplicationResult]:
     jobs = await service.getAll()
-
-    result: list[JobApplicationResult] = [
-        JobApplicationResult(**row.model_dump()) for row in jobs
-    ]
-
-    return result
+    # Convert ORM models to response schemas
+    return [JobApplicationResult(**job.model_dump()) for job in jobs]
 
 
 @router.get("/{id}")
@@ -72,3 +68,4 @@ async def delete_job_application(
     _: CurrentUserDep, id: UUID, service: JobServiceDep
 ) -> bool:
     return await service.delete(id)
+
