@@ -4,8 +4,8 @@ services:
     env_file: .env
     environment:
       POSTGRES_SERVER: db # Leave this to point to the service below
-      POSTGRES_DB: "" # This is the name of the db you use below
-      POSTGRES_PASSWORD: "" # Password of the db you use below
+      POSTGRES_DB: # This is the name of the db you use below
+      POSTGRES_PASSWORD: # Password of the db you use below
       REDIS_HOST: redis
     expose:
       - 8000
@@ -20,11 +20,11 @@ services:
     environment:
       POSTGRES_USER: "postgres" # Leave as is or create your own
       POSTGRES_PASSWORD: "password" # Leave as is or create your own
-      POSTGRES_DB: "" # Create a database name
+      POSTGRES_DB: # Create a database name
     ports:
       - "5433:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql
   
   redis:
     image: redis:8
