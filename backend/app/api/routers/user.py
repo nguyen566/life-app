@@ -5,9 +5,9 @@ from fastapi.security import OAuth2PasswordRequestForm
 from fastapi.templating import Jinja2Templates
 from pydantic import EmailStr
 
-from app.utils import TEMPLATE_DIR
+from app.utils import TEMPLATE_DIR, decode_access_token
 from app.core.security import TokenData
-from app.api.schemas.response import CommonHTTPResponse
+from app.api.schemas.response import CommonHTTPResponse, TokenValidationResponse
 
 from ...config import app_settings
 from ...database.redis import add_jti_to_blacklist
@@ -57,6 +57,12 @@ async def reset_password_form(request: Request, token: str):
 async def verify_user_email(token: str, service: UserServiceDep) -> CommonHTTPResponse:
     await service.verify_user_email(token)
     return CommonHTTPResponse(detail="Email verified successfully")
+
+
+@router.get("/validate_token")
+async def validate_token(token: str, _: CurrentUserDep) -> TokenValidationResponse:
+    decoded_token = decode_access_token(token)
+    return TokenValidationResponse(valid=decoded_token is not None)
 
 
 # POSTS

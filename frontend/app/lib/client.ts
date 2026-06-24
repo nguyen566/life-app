@@ -169,21 +169,16 @@ export interface JobApplicationResult {
    * Date Applied
    * Date when the application was submitted
    * @format date-time
-   * @default "2026-06-18T13:54:34.135123"
+   * @default "2026-06-24T10:00:24.732340"
    */
   date_applied?: string;
   /**
    * Date Modified
    * Date when the application was last updated
    * @format date-time
-   * @default "2026-06-18T13:54:34.135161"
+   * @default "2026-06-24T10:00:24.732377"
    */
   date_modified?: string;
-  /**
-   * User Id
-   * @format uuid
-   */
-  user_id: string;
 }
 
 /** JobApplicationUpdate */
@@ -198,6 +193,15 @@ export interface TokenData {
   access_token: string;
   /** Token Type */
   token_type: string;
+}
+
+/** TokenValidationResponse */
+export interface TokenValidationResponse {
+  /**
+   * Valid
+   * Whether the token is valid
+   */
+  valid: boolean;
 }
 
 /** UserInput */
@@ -685,6 +689,31 @@ export class Api<
         path: `/user/verify`,
         method: "GET",
         query: query,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @tags User
+     * @name ValidateTokenUserValidateTokenGet
+     * @summary Validate Token
+     * @request GET:/user/validate_token
+     * @secure
+     */
+    validateTokenUserValidateTokenGet: (
+      query: {
+        /** Token */
+        token: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<TokenValidationResponse, HTTPValidationError>({
+        path: `/user/validate_token`,
+        method: "GET",
+        query: query,
+        secure: true,
         format: "json",
         ...params,
       }),
