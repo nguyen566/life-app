@@ -257,10 +257,36 @@ export function JobsTable({
     },
   });
 
+  const exportToCSV = (filename = "Jobs_applied.csv") => {
+    const rows = table.getFilteredRowModel().rows;
+    const headers = ["company", "position", "site", "status", "date_applied"];
+    const csvRows = rows.map((row) =>
+      [
+        row.getValue("company"),
+        row.getValue("position"),
+        row.getValue("site"),
+        row.getValue("status"),
+        formatUtcDate(row.getValue("date_applied")),
+      ]
+        .map((v) => `"${String(v ?? "").replace(/"/g, '""')}"`)
+        .join(","),
+    );
+
+    const csv = [headers.join(","), ...csvRows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href: url,
+      download: filename,
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <>
       <div className="overflow-auto">
-        <div className="flex items-center py-4">
+        <div className="flex items-center justify-between p-4">
           <Input
             placeholder="Filter companies..."
             value={
@@ -271,6 +297,15 @@ export function JobsTable({
             }
             className="max-w-sm"
           />
+
+          <Button
+            type="button"
+            className="rounded-full"
+            variant="outline"
+            onClick={() => exportToCSV()}
+          >
+            Export
+          </Button>
         </div>
         <div className="overflow-auto rounded-md border">
           <Table>
