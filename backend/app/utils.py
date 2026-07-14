@@ -13,7 +13,7 @@ APP_DIR = Path(__file__).resolve().parent
 TEMPLATE_DIR = APP_DIR / "templates"
 
 
-def generate_access_token(data: dict, expiry: timedelta = timedelta(days=1)) -> str:
+def generate_access_token(data: dict, expiry: timedelta = timedelta(hours=1)) -> str:
     return jwt.encode(
         payload={
             **data,
