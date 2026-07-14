@@ -28,27 +28,26 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const initializeAuth = async () => {
       try {
         const access_token = localStorage.getItem(AuthCacheType.TOKEN);
-        if (access_token) {
-          api.setSecurityData(access_token);
+        if (!access_token) {
+          setToken(null);
+          return;
+        }
 
-          // Validate token - if invalid, clear it
-          const { data } = await api.user.validateTokenUserValidateTokenGet({
-            token: access_token,
-          });
+        api.setSecurityData(access_token);
 
-          if (data?.valid) {
-            setToken(access_token);
-          } else {
-            localStorage.removeItem(AuthCacheType.TOKEN);
-            setToken(null);
-          }
+        // Validate token - if invalid, clear it
+        const { data } = await api.user.validateTokenUserValidateTokenGet({
+          token: access_token,
+        });
+
+        if (data?.valid) {
+          setToken(access_token);
         } else {
+          localStorage.removeItem(AuthCacheType.TOKEN);
           setToken(null);
         }
       } catch {
-        // Network error or API issue - keep token in cache, app will handle it
-        const access_token = localStorage.getItem(AuthCacheType.TOKEN);
-        setToken(access_token || null);
+        setToken(null);
       }
     };
 
@@ -56,10 +55,10 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, []);
 
   useEffect(() => {
-    if(token === null){
+    if (token === null) {
       logout();
     }
-  }, [token])
+  }, [token]);
 
   const login = async (email: string, password: string) => {
     try {
