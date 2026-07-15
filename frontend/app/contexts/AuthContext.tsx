@@ -24,6 +24,12 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [token, setToken] = useState<string | null>();
   const navigate = useNavigate();
 
+  const removeToken = () => {
+    localStorage.removeItem(AuthCacheType.TOKEN);
+    setToken(null);
+    navigate("/login");
+  };
+
   useEffect(() => {
     const initializeAuth = async () => {
       try {
@@ -43,22 +49,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         if (data?.valid) {
           setToken(access_token);
         } else {
-          localStorage.removeItem(AuthCacheType.TOKEN);
-          setToken(null);
+          removeToken();
         }
       } catch {
-        setToken(null);
+        removeToken();
       }
     };
 
     initializeAuth();
   }, []);
-
-  useEffect(() => {
-    if (token === null) {
-      logout();
-    }
-  }, [token]);
 
   const login = async (email: string, password: string) => {
     try {
@@ -92,20 +91,15 @@ const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       // Attempt to log user out but if cannot, we need to remove cache
       await api.user.logoutUserUserLogoutGet();
     } finally {
-      setToken(null);
       api.setSecurityData(null);
 
       // Clear the cached token
-      localStorage.removeItem(AuthCacheType.TOKEN);
-      navigate("/login");
+      removeToken();
     }
-    // await api.user.logoutUserUserLogoutGet();
-    setToken(null);
     api.setSecurityData(null);
 
     // Clear the cached token
-    localStorage.removeItem(AuthCacheType.TOKEN);
-    navigate("/login");
+    removeToken();
   };
 
   return (
